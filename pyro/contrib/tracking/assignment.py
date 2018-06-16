@@ -18,9 +18,9 @@ def _warn_if_nan(tensor, name):
 
 
 def _product(factors):
-    result = 1
+    result = 1.
     for factor in factors:
-        result *= factor
+        result = result * factor
     return result
 
 
@@ -220,6 +220,8 @@ def compute_marginals(exists_logits, assign_logits):
     assign = assign_probs.log()
     exists = exists[1] - exists[0]
     assign = assign[:, :-1] - assign[:, -1:]
+    _warn_if_nan(exists, 'exists')
+    _warn_if_nan(assign, 'assign')
     return exists, assign
 
 
@@ -314,7 +316,7 @@ def compute_marginals_persistent(exists_logits, assign_logits):
         for t in range(num_frames):
             assign_map = {}
             for n in range(1 + min(len(exists), num_detections)):
-                for objects in itertools.combinations(range(num_objects), n):
+                for objects in itertools.combinations(exists, n):
                     for detections in itertools.permutations(range(num_detections), n):
                         assign = tuple(zip(objects, detections))
                         assign_map[assign] = _exp(sum(assign_logits[t, j, i] for i, j in assign))
